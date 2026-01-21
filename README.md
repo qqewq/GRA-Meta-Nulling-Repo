@@ -1,3 +1,16 @@
+src/
+ ├── training/
+ │   ├── train_meta.py
+ │   └── losses.py
+ ├── ros2/
+ │   ├── vision_node.py
+ │   ├── grasp_node.py
+ │   ├── nav_node.py
+ │   └── meta_null_node.py
+ └── common/
+     └── phi_meta.py
+---------------------------
+
 # GRA Meta-Nulling (RoboNull AI)
 
 This repository contains the reference architecture, mathematical foundations,
