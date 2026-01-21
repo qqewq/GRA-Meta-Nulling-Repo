@@ -23,3 +23,19 @@ Research-grade / prototype. Designed for extension.
 
 ## License
 Apache 2.0
+-----------
+## RoboNull MVP Demo
+
+**Scenario:** Pick & Walk & Avoid (Unitree G1)
+
+- Vision, Grasp, Navigation trained independently
+- RoboNull adds a meta-layer minimizing inter-domain conflict
+- No task-specific heuristics
+- Fully switchable at runtime
+
+**Key result:**
+> Collision events reduced to zero without degrading task success.
+
+See: `experiments/baseline_vs_robonull.md`
+
+
