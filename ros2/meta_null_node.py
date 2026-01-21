@@ -1,67 +1,41 @@
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-import torch
 from std_msgs.msg import Float32MultiArray
-
-ALPHA = 0.3   # сила мета-коррекции (0 = baseline)
+import numpy as np
 
 class MetaNullNode(Node):
     def __init__(self):
         super().__init__('meta_null_node')
+        self.sub_nav = self.create_subscription(Float32MultiArray, 'nav_cmd', self.nav_cb, 10)
+        self.sub_grasp = self.create_subscription(Float32MultiArray, 'grasp_cmd', self.grasp_cb, 10)
+        self.pub = self.create_publisher(Float32MultiArray, 'final_cmd', 10)
+        self.nav = None
+        self.grasp = None
+        self.alpha = 0.3
 
-        self.psi = {}
+    def nav_cb(self, msg):
+        self.nav = np.array(msg.data)
+        self.publish_final()
 
-        self.create_subscription(
-            Float32MultiArray, '/psi_vision',
-            lambda m: self.store('vision', m), 10)
+    def grasp_cb(self, msg):
+        self.grasp = np.array(msg.data)
+        self.publish_final()
 
-        self.create_subscription(
-            Float32MultiArray, '/psi_grasp',
-            lambda m: self.store('grasp', m), 10)
-
-        self.create_subscription(
-            Float32MultiArray, '/psi_nav',
-            lambda m: self.store('nav', m), 10)
-
-        self.pub = self.create_publisher(
-            Float32MultiArray, '/meta_correction', 10)
-
-        self.timer = self.create_timer(0.05, self.step)  # 20 Hz
-
-    def store(self, key, msg):
-        self.psi[key] = torch.tensor(msg.data)
-
-    def step(self):
-        if len(self.psi) < 3:
+    def publish_final(self):
+        if self.nav is None or self.grasp is None:
             return
-
-        psi_stack = torch.stack([
-            self.psi['vision'],
-            self.psi['grasp'],
-            self.psi['nav']
-        ])  # [3, d]
-
-        center = psi_stack.mean(dim=0)
-        corrections = center - psi_stack
-
-        # агрегируем коррекцию
-        meta = ALPHA * corrections.mean(dim=0)
-
+        stack = np.stack([self.nav, self.grasp])
+        center = stack.mean(0)
+        meta_corr = self.alpha * (center - stack).mean(0)
+        final_action = self.nav + self.grasp + meta_corr
         out = Float32MultiArray()
-        out.data = meta.detach().cpu().tolist()
+        out.data = final_action
         self.pub.publish(out)
 
-        # лог Φ_meta
-        phi_meta = ((psi_stack - center) ** 2).mean().item()
-        self.get_logger().info(f'Φ_meta={phi_meta:.4f}')
-
-
-def main():
-    rclpy.init()
+def main(args=None):
+    rclpy.init(args=args)
     node = MetaNullNode()
     rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
-
-
-if __name__ == '__main__':
-    main()
