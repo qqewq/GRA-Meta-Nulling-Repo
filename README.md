@@ -1,3 +1,12 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18366903.svg)](https://doi.org/10.5281/zenodo.18366903)
+
+## Citation
+
+If you use this work in research, please cite:
+
+Oleg (2026). *GRA Meta-Nulling: A Non-Postulate Model of Quantum Measurement and Many-Worlds Consistency*.  
+Zenodo. DOI: [10.5281/zenodo.18366903](https://doi.org/10.5281/zenodo.18366903)
+
 # GRA Meta-Nulling (RoboNull AI)
 
 This repository contains the reference architecture, mathematical foundations,
